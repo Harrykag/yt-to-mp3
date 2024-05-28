@@ -2,6 +2,7 @@ import os
 import logging
 from pytube import YouTube
 from moviepy.editor import VideoFileClip
+from pathlib import Path
 
 # Configurar o logging para mostrar mensagens detalhadas
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -32,15 +33,18 @@ def convert_to_mp3(video_path, output_path):
 
 def main():
     url = input("Digite a URL do vídeo do YouTube: ")
-    output_dir = os.path.join(os.getcwd(), "downloads")
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    output_dir = Path.home() / "Downloads"  # Caminho da pasta de downloads padrão
 
-    video_path = download_video(url, output_dir)
+    if not output_dir.exists():
+        logging.error("Pasta de downloads padrão não encontrada.")
+        return
+
+    video_path = download_video(url, str(output_dir))
     if video_path and os.path.exists(video_path):
-        output_path = os.path.splitext(video_path)[0] + '.mp3'
-        convert_to_mp3(video_path, output_path)
-        if os.path.exists(output_path):
+        output_filename = f"{Path(video_path).stem}.mp3"
+        output_path = output_dir / output_filename
+        convert_to_mp3(video_path, str(output_path))
+        if output_path.exists():
             os.remove(video_path)  # Remove o arquivo de vídeo após a conversão
             logging.info(f"Download completo! O arquivo MP3 foi salvo em: {output_path}")
         else:
